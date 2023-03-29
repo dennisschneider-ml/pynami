@@ -67,7 +67,7 @@ class BaseModel:
 
         """
         if name in ['id', 'id_'] and hasattr(self, name) \
-            and getattr(self, name) is not None:
+                and getattr(self, name) is not None:
             raise AccessError('Id cannot be modified!')
         elif name == 'iban':
             value = validate_iban(value)

@@ -8,19 +8,19 @@ import json
 import requests
 
 from .constants import URLS, DEFAULT_PARAMS
-from .schemas.activity import SearchActivitySchema, ActivitySchema
-from .schemas.cogc import SearchBescheinigungSchema, BescheinigungSchema
-from .schemas.dashboard import NotificationSchema, StatsSchema
-from .schemas.default import BaseadminSchema
-from .schemas.grpadmin import SearchInvoiceSchema, InvoiceSchema
-from .schemas.history import HistoryEntrySchema, MitgliedHistorySchema
-from .schemas.mgl import SearchMitgliedSchema, MitgliedSchema
-from .schemas.search import SearchSchema
-from .schemas.training import SearchAusbildungSchema, AusbildungSchema
-from .schemas.tags import TagSchema, SearchTagSchema
-from .util import open_download_pdf
-from .tools import tabulate2x
-from .data import exceptions
+from schemas.activity import SearchActivitySchema, ActivitySchema
+from schemas.certificate import SearchBescheinigungSchema, BescheinigungSchema
+from schemas.dashboard import NotificationSchema, StatsSchema
+from schemas.default import BaseadminSchema
+from schemas.grpadmin import SearchInvoiceSchema, InvoiceSchema
+from schemas.history import HistoryEntrySchema, MitgliedHistorySchema
+from schemas.mgl import SearchMitgliedSchema, MitgliedSchema
+from schemas.search import SearchSchema
+from schemas.training import SearchAusbildungSchema, AusbildungSchema
+from schemas.tags import TagSchema, SearchTagSchema
+from util import open_download_pdf
+from tools import tabulate2x
+from data import exceptions
 
 
 class NaMi(object):

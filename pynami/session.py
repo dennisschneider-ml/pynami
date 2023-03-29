@@ -3,11 +3,10 @@ from pynami.schemas.mgl import SearchMitgliedSchema
 from pynami.net.connect import Connector
 
 
-class Session(object):
+class Session:
     
     def __init__(self, config, **kwargs):
-        self.__config = config
-        self.__config.update(kwargs)
+        self.__config = config | kwargs
         self.connector = Connector()
         self.current_user = None
 
