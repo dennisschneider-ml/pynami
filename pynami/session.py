@@ -1,128 +1,42 @@
-from .data.exceptions import NamiHTTPException, NamiResponseSuccessException, NamiResponseTypeException
-from .data.constants import URLS, DEFAULT_PARAMS
-from .schemas.search import SearchSchema
-from .schemas.mgl import SearchMitgliedSchema
-
-import requests
+from pynami.schemas.search import SearchSchema
+from pynami.schemas.mgl import SearchMitgliedSchema
+from pynami.net.connect import Connector
 
 
 class Session(object):
     
     def __init__(self, config, **kwargs):
-        self.session = requests.Session()
         self.__config = config
         self.__config.update(kwargs)
+        self.connector = Connector()
+        self.current_user = None
 
     def search(self, **kwargs):
-        """
-        Run a search for members
-
-        Todo:
-            * Check search terms and formatting. Also some search keys can only
-              be used mutually exclusive.
-
-        Args:
-            **kwargs: Search keys and words. Be advised that some search words
-                must  have a certain formatting or can only take a limited
-                amount of values.
-
-        Returns:
-            :obj:`list` of :class:`~.mgl.SearchMitglied`: The search
-            results
-
-        See also:
-            :class:`~.search.SearchSchema` for a complete list of search
-            keys
-        """
-        # this is just a default search
         if not kwargs:
             kwargs.update({})
-        params = DEFAULT_PARAMS
-        params['searchedValues'] = SearchSchema().dumps(kwargs, separators=(',', ':'))
-        r = self.session.get(URLS['SEARCH'], params=params)
-        return SearchMitgliedSchema().load(self._check_response(r), many=True)
+        params = {'searchedValues': SearchSchema().dumps(kwargs, separators=(',', ':'))}
+        response_content = self.connector.search(**params)
+        return SearchMitgliedSchema().load(response_content, many=True)
 
-    def auth(self, username=None, password=None):
+    def __enter__(self, username=None, password=None):
         """
-        Authenticate against the |NAMI| |API|. This stores the jsessionId
-        cookie in the requests session. Therefore this needs to be called only
-        once.
-
-        This also stores your id (not the Mitgliednummer) for later purposes.
-
+        Authenticate the user in the NaMi-API and save the logged in user for later usage.
         Args:
-            username (:obj:`str`, optional): The |NAMI| username. Which is your
-                Mitgliedsnummer
+            @param username: The NaMi username, which is your member-id.
             password (:obj:`str`, optional): Your NAMI password
-
-        Returns:
-            :class:`requests.Session`: The requests session, including the
-            auth cookie
         """
+        assert username or "username" in self.__config, "Provide a username either by config or argument"
+        assert password or "password" in self.__config, "Provide a password either by config or argument"
         if not username or not password:
             username = self.__config['username']
             password = self.__config['password']
-
-        payload = {
-            'Login': 'API',
-            'username': username,
-            'password': password
-        }
-
-        url = URLS['AUTH']
-        r = self.session.post(url, data=payload)
-        if r.status_code != 200:
-            raise ValueError('Authentication failed!')
-
-        # Get the id of the user
-        myself = self.search(mitgliedsNummer=username)
-        if len(myself) == 1:
-            self.__config['id'] = myself[0].id
-            self.__config['stammesnummer'] = myself[0].gruppierungId
-        else:
-            raise ValueError(f'Received {len(myself)} search results while '
-                             f'searching for myself!')
-        return self.session
-
-    def _check_response(self, response):
-        """
-        Check a requests response object if the |NAMI| response looks ok.
-        This currently checks some very basic things.
-
-        Raises:
-            NamiHTTPException: When |HTTP| communication failes
-            NamiResponseSuccessException: When the |NAMI| returns an error
-        """
-        if response.status_code != requests.codes.ok:
-            raise NamiHTTPException(response.status_code)
-        if response.headers['Content-Type'] == 'application/pdf':
-            return response.content
-        rjson = response.json()
-        if not rjson['success']:
-            raise NamiResponseSuccessException()
-
-        # allowed response types are: OK, INFO, WARN, ERROR, EXCEPTION
-        if rjson['responseType'] not in ['OK', 'INFO', None]:
-            raise NamiResponseTypeException(rjson['responseType'])
-        return rjson['data']
-
-    def __enter__(self):
-        self.auth()
+        self.connector.authenticate(username, password)
+        self.current_user = next(iter(self.search(mitgliedsNummer=username)), None)
+        if not self.current_user:
+            raise ValueError(f"Login not possible for User {username}.")
         return self
 
-    def logout(self):
-        """This should be called at the end of the communication. It is called
-        when exiting through the :meth:`~contextmnager.__exit__` method.
-        """
-        url = URLS['LOGOUT']
-        r = self.session.get(url)
-        if r.status_code != 204:
-            self._check_response(r)
-
     def __exit__(self, exception_type, exception_value, traceback):
-        try:
-            self.logout()
-        except NamiHTTPException as ex:
-            print(f'NamiHTTPException during logout: {ex}')
+        self.connector.logout()
         if exception_type is None:
             return True
