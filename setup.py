@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(name='pynami',
       version=__version__,
-      description='Python wrapper forthe NaMi API',
+      description='Python wrapper for the NaMi API',
       long_description=long_description,
       long_description_content_type="text/markdown",
       classifiers=['Development Status :: 3 - Alpha',

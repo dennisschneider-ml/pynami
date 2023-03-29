@@ -20,27 +20,7 @@ from .schemas.training import SearchAusbildungSchema, AusbildungSchema
 from .schemas.tags import TagSchema, SearchTagSchema
 from .util import open_download_pdf
 from .tools import tabulate2x
-
-
-class NamiResponseTypeError(Exception):
-    """
-    This is raised when the response type from the |NAMI| is not in list of
-    allowed values or more specifically when the |NAMI| returns an error, a
-    warning or an exception.
-    """
-    pass
-
-
-class NamiResponseSuccessError(Exception):
-    """
-    This is being raised when the response 'success' field is not :data:`True`.
-    """
-    pass
-
-
-class NamiHTTPError(Exception):
-    """Raised when the HTTP status code was not as expected!"""
-    pass
+from .data import exceptions
 
 
 class NaMi(object):

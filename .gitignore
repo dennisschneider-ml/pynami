@@ -1,0 +1,5 @@
+.judo
+**/__pycache__
+.venv
+secrets.py
+usage.py
