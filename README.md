@@ -33,11 +33,10 @@ Since there is currently no working test setup for the NAMI some things cannot b
 You need to have at least [Python 3.6](https://www.python.org/downloads/release/python-360/) for this to work.
 
 ## Installation
-Just download or clone this repository and run the following command in the top directory (where [setup.py](setup.py) is located).
-```bash
-pip install [-e] .
+Install by using the following command:
 ```
-Use the `-e` option if you want to edit the source files.
+pip install git+https://github.com/dennisschneider-ml/pynami.git
+```
 
 ## Documentation
 Documentation of this package is available at [ReadtheDocs](https://pynami.readthedocs.io/en/latest/). This also covers a lot of the NAMI API.
